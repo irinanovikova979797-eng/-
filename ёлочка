@@ -1,0 +1,140 @@
+using System;
+using System.Threading;
+
+class Program
+{
+    static void Main()
+    {
+        Console.CursorVisible = false;
+
+        // Устанавливаем размер консоли для большей ёлки
+        Console.WindowWidth = 120;
+        Console.WindowHeight = 40;
+
+        for (int frame = 0; frame < 50; frame++)
+        {
+            Console.Clear();
+            DrawTree(frame);
+            Thread.Sleep(300);
+        }
+
+        Console.CursorVisible = true;
+    }
+
+    static void DrawTree(int frame)
+    {
+        Random random = new Random();
+        int height = 20;
+        int consoleWidth = Console.WindowWidth;
+
+        // Мерцающая звезда по центру
+        if (frame % 2 == 0)
+            Console.ForegroundColor = ConsoleColor.Yellow;
+        else
+            Console.ForegroundColor = ConsoleColor.White;
+
+        string star = "★";
+        int starPosition = (consoleWidth - 1) / 2; // Центр для одного символа
+        Console.SetCursorPosition(starPosition, 0);
+        Console.WriteLine(star);
+
+        // Ветви с мигающими огоньками
+        for (int i = 0; i < height; i++)
+        {
+            int width = 2 * i + 1;
+
+            // Правильное центрирование
+            int leftPadding = (consoleWidth - width) / 2;
+
+            Console.SetCursorPosition(leftPadding, i + 1);
+
+            for (int j = 0; j < width; j++)
+            {
+                if (random.Next(10) < 3 && frame % 2 == 0)
+                {
+                    Console.ForegroundColor = GetRandomColor(random);
+                    Console.Write("o");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write("*");
+                }
+            }
+        }
+
+        // Ствол по центру
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
+        int trunkWidth = 3;
+        int trunkPosition = (consoleWidth - trunkWidth) / 2;
+        Console.SetCursorPosition(trunkPosition, height + 1);
+        Console.WriteLine("|||");
+        Console.SetCursorPosition(trunkPosition, height + 2);
+        Console.WriteLine("---");
+
+        // Поздравление по центру
+        Console.ResetColor();
+        string greeting = "С Новым Годом! 🎄";
+        int greetingPosition = (consoleWidth - greeting.Length) / 2;
+        Console.SetCursorPosition(greetingPosition, height + 4);
+        Console.WriteLine(greeting);
+
+        // Добавляем снег
+        DrawSnow(random, height, consoleWidth);
+    }
+
+    static void DrawSnow(Random random, int treeHeight, int consoleWidth)
+    {
+        Console.ForegroundColor = ConsoleColor.White;
+        int consoleHeight = Console.WindowHeight;
+
+        // Рисуем случайные снежинки вокруг ёлки
+        for (int i = 0; i < 30; i++)
+        {
+            int x = random.Next(consoleWidth);
+            int y = random.Next(consoleHeight - 5);
+
+            // Не рисуем снег на самой ёлке
+            if (!IsPositionOnTree(x, y, treeHeight, consoleWidth))
+            {
+                Console.SetCursorPosition(x, y);
+                Console.Write("•");
+            }
+        }
+    }
+
+    static bool IsPositionOnTree(int x, int y, int height, int consoleWidth)
+    {
+        if (y <= 0 || y > height + 1) return false;
+
+        int center = consoleWidth / 2;
+
+        if (y == 0)
+        {
+            // Проверка для звезды
+            return x == center;
+        }
+
+        int row = y - 1;
+        if (row < 0 || row >= height) return false;
+
+        int treeWidthAtRow = 2 * row + 1;
+        int treeLeft = center - treeWidthAtRow / 2;
+        int treeRight = treeLeft + treeWidthAtRow - 1;
+
+        return x >= treeLeft && x <= treeRight;
+    }
+
+    static ConsoleColor GetRandomColor(Random random)
+    {
+        ConsoleColor[] colors = {
+            ConsoleColor.Red,
+            ConsoleColor.Blue,
+            ConsoleColor.Cyan,
+            ConsoleColor.Magenta,
+            ConsoleColor.Yellow,
+            ConsoleColor.White
+        };
+        return colors[random.Next(colors.Length)];
+    }
+}
